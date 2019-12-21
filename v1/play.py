@@ -1,4 +1,5 @@
 from collections import defaultdict
+from urllib.request import urlopen
 import pygame
 import pygame.midi as midi
 import copy
@@ -7,6 +8,8 @@ import os
 import ast
 import random
 import sys
+import urllib
+import requests
 
 # FastAPI
 
@@ -25,9 +28,14 @@ class Play():
         self.chords = []
         # print(chords)
         self.instruments = instruments
-        with open(chords, 'r') as f:
-            for line in f.readlines():
-                self.chords.append(ast.literal_eval(line))
+        # https://github.com/kndombe/muge/blob/master/v1/easy%20simple.chtr
+        # with open(chords, 'r') as f:
+        #     for line in f.readlines():
+        #         self.chords.append(ast.literal_eval(line))
+        for line in urlopen(chords).readlines():
+            line = str(line)
+            line = line.split('"')[1].split('\\')[0]
+            self.chords.append(ast.literal_eval(line))
         self.met = 0
         self.current = 0
         self.quantize = quantize
@@ -153,7 +161,10 @@ class Play():
 
 
 if __name__ == '__main__':
-    song_chords = sys.argv[1]
+    if len(sys.argv) > 1:
+        song_chords = sys.argv[1]
+    else:
+        song_chords = 'heal simple.chtr'
     instruments = sys.argv[2].split(' ') if len(sys.argv) >= 3 else []
     if not song_chords.endswith('.chtr'):
         song_chords += '.chtr'
